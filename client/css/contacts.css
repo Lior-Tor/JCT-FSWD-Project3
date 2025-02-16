@@ -1,0 +1,130 @@
+/* Contacts view container */
+.contacts-view {
+  width: 100%;
+  max-width: 800px;
+  margin: 2em auto;
+  padding: 1em;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Header */
+.contacts-header {
+  display: flex;
+  flex-direction: column;
+  gap: 1em;
+  margin-bottom: 1em;
+}
+
+.contacts-header h2 {
+  margin: 0;
+  font-size: 1.5em;
+  color: #333;
+}
+
+/* Actions */
+.contacts-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1em;
+}
+
+.contacts-actions input[type="text"] {
+  flex-grow: 1;
+  padding: 0.6em;
+  border: 1px solid #ccc;
+  border-radius: 20px;
+  outline: none;
+  transition: border 0.3s ease;
+}
+
+.contacts-actions input[type="text"]:focus {
+  border-color: #1a73e8;
+}
+
+.contacts-actions button {
+  padding: 0.6em 1em;
+  background: #1a73e8;
+  border: none;
+  color: #fff;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.2s ease;
+}
+
+.contacts-actions button:hover {
+  background: #1256c4;
+  transform: translateY(-2px);
+}
+
+/* Contacts list */
+.contacts-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.contact-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1em;
+  border-bottom: 1px solid #eee;
+  transition: background 0.3s ease;
+}
+
+.contact-item:hover {
+  background: #f9f9f9;
+}
+
+/* Contact info */
+.contact-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.contact-name {
+  font-weight: bold;
+  font-size: 1.1em;
+  color: #333;
+}
+
+.contact-phone,
+.contact-email {
+  font-size: 0.9em;
+  color: #555;
+}
+
+/* Edit button */
+.edit-contact-btn {
+  background: none;
+  border: none;
+  color: #1a73e8;
+  cursor: pointer;
+  padding: 0.5em;
+  transition: color 0.3s ease;
+}
+
+.edit-contact-btn:hover {
+  color: #1256c4;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .contacts-header {
+    align-items: flex-start;
+  }
+  
+  .contacts-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .contacts-actions input[type="text"],
+  .contacts-actions button {
+    width: 100%;
+    margin-bottom: 0.5em;
+  }
+}

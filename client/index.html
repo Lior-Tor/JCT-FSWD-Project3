@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Contacly - Your Contacts, Simplified</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/auth.css" />
+  </head>
+  <body>
+    <header>
+      <div class="header-left">
+        <img src="images/logo-removedbg.png" alt="Contacly Logo" />
+        <h1>Your Contacts, Simplified</h1>
+      </div>
+      <nav id="navLinks">
+        <button id="homeBtn">Home</button>
+        <button id="helpBtn">Help</button>
+        <button id="contactBtn">Contact</button>
+      </nav>
+      <button id="logoutBtn" style="display: none;">Logout</button>
+    </header>
+    <main id="app">
+      <!-- SPA views injected here -->
+    </main>
+    <footer>
+      <p>&copy; 2025 Contacly. All rights reserved.</p>
+    </footer>
+    <script src="../server/dbAPI.js"></script>
+    <script src="../server/usersServer.js"></script>
+    <script src="../server/contactsServer.js"></script>
+    <script src="js/network.js"></script>
+    <script src="js/FAJAX.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/router.js"></script>
+  </body>
+</html>
