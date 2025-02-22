@@ -15,8 +15,10 @@ class FXMLHttpRequest {
     this._method = method;
     this._url = url;
     this._async = async;
-    this.readyState = 1;
-    if (this.onreadystatechange) this.onreadystatechange();
+    this.readyState = 1; // Opened
+    if (this.onreadystatechange) {
+      this.onreadystatechange();
+    }
   }
   
   setRequestHeader(header, value) {
@@ -25,7 +27,9 @@ class FXMLHttpRequest {
   
   send(body = null) {
     this.readyState = 2;
-    if (this.onreadystatechange) this.onreadystatechange();
+    if (this.onreadystatechange) {
+      this.onreadystatechange();
+    }
 
     // Send the request through our simulated Network
     Network.send(
@@ -44,7 +48,9 @@ class FXMLHttpRequest {
           this.responseText = response.responseText;
         }
         this.readyState = 4;
-        if (this.onreadystatechange) this.onreadystatechange();
+        if (this.onreadystatechange) {
+          this.onreadystatechange();
+        }
       }
     );
   }

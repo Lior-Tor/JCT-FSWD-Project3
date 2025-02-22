@@ -1,28 +1,18 @@
-/* app.js
-   A modern, professional client-side script for Contacly.
-   Uses FAJAX + Network to communicate with simulated servers (usersServer, contactsServer).
-   Written with a focus on user-friendly functionality, responsive layouts,
-   accessibility, and creative UI transitions.
-*/
+/* app.js */
 
 document.addEventListener("DOMContentLoaded", () => {
   // Initialize router and default route
   Router.init();
+  // Redirect to login if no route is provided
   if (!location.hash) {
     location.hash = "#/login";
   }
 
-  // Header navigation
-  const homeBtn = document.getElementById("homeBtn");
+  // Header navigation buttons
   const helpBtn = document.getElementById("helpBtn");
   const contactBtn = document.getElementById("contactBtn");
   const logoutBtn = document.getElementById("logoutBtn");
 
-  if (homeBtn) {
-    homeBtn.addEventListener("click", () => {
-      location.hash = "#/contacts";
-    });
-  }
   if (helpBtn) {
     helpBtn.addEventListener("click", () => {
       alert("Need help? Contact support@contacly.com");
@@ -40,7 +30,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Global form submit listener for login and registration
   document.addEventListener("submit", (event) => {
     event.preventDefault();
-    const form = event.target;
+    const form = event.target; // The form that was submitted
     if (form.id === "loginForm") {
       handleLogin();
     } else if (form.id === "registerForm") {
@@ -57,9 +47,7 @@ function handleLogout() {
   showLoginError("You have been logged out.");
 }
 
-/* =====================
-   Handle Login (FAJAX)
-====================== */
+/* Handle Login (FAJAX) */
 function handleLogin() {
   const email = document.getElementById("email")?.value.trim();
   const password = document.getElementById("password")?.value.trim();
@@ -74,7 +62,7 @@ function handleLogin() {
   xhr.open("POST", "/users/login");
 
   xhr.onreadystatechange = function () {
-    if (xhr.readyState === 4) {
+    if (xhr.readyState === 4) { // Request complete
       let response;
       try {
         response = JSON.parse(xhr.responseText || "{}");
@@ -95,9 +83,7 @@ function handleLogin() {
   xhr.send(body);
 }
 
-/* =========================
-   Handle Registration (FAJAX)
-========================== */
+/* Handle Registration (FAJAX) */
 function handleRegister() {
   const fullname = document.getElementById("fullname")?.value.trim();
   const email = document.getElementById("email")?.value.trim();
@@ -117,7 +103,7 @@ function handleRegister() {
   xhr.open("POST", "/users/register");
 
   xhr.onreadystatechange = function () {
-    if (xhr.readyState === 4) {
+    if (xhr.readyState === 4) { // Request complete
       let response;
       try {
         response = JSON.parse(xhr.responseText || "{}");
