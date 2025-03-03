@@ -15,6 +15,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const helpBtn = document.getElementById("helpBtn");
   const contactBtn = document.getElementById("contactBtn");
   const logoutBtn = document.getElementById("logoutBtn");
+  const addContactBtn = document.getElementById("addContactBtn");
 
   if (homeBtn) {
     homeBtn.addEventListener("click", () => {
@@ -40,6 +41,28 @@ document.addEventListener("DOMContentLoaded", () => {
       handleLogout();
     });
   }
+  if (addContactBtn) {
+    addContactBtn.addEventListener("click", () => {
+      showContactModal();
+    });
+  }
+
+  // Search contact logic
+  const searchContact = document.getElementById("searchContact");
+  if (searchContact) {
+    searchContact.addEventListener("input", (e) => {
+      filterContacts(e.target.value);
+    });
+  }
+
+  // Handle contact form submission
+  document.getElementById("contactForm")?.addEventListener("submit", (event) => {
+    event.preventDefault();
+    handleAddContact();
+  });
+
+  // Handle modal cancel
+  document.getElementById("cancelModalBtn")?.addEventListener("click", closeContactModal);
 
   // Global form submit listener for login and registration
   document.addEventListener("submit", (event) => {
@@ -52,7 +75,154 @@ document.addEventListener("DOMContentLoaded", () => {
       handleRegister();
     }
   });
+  
 });
+
+// Function to show contact modal (for adding or editing)
+function showContactModal(contact = null) {
+  const modal = document.getElementById("contactModal");
+  if (modal) {
+    modal.style.display = "block";
+    
+  console.log("Ok");
+    document.getElementById("modalTitle").textContent = contact ? "Edit Contact" : "Add Contact";
+    
+    if (contact) {
+      document.getElementById("contactName").value = contact.fullname;
+      document.getElementById("contactPhone").value = contact.phone;
+      document.getElementById("contactEmail").value = contact.email;
+    } else {
+      document.getElementById("contactForm").reset();
+    }
+  }
+}
+
+// Function to close the modal
+function closeContactModal() {
+  document.getElementById("contactModal").style.display = "none";
+}
+
+// Function to fetch contacts and display them
+function fetchContacts() {
+  const xhr = new FXMLHttpRequest();
+  xhr.open("GET", "/contacts");
+  xhr.onreadystatechange = function () {
+    if (xhr.readyState === 4 && xhr.status === 200) {
+      const { contacts } = JSON.parse(xhr.responseText);
+      renderContacts(contacts);
+    }
+  };
+  xhr.send();
+}
+
+// Function to render contacts
+function renderContacts(contacts) {
+  const contactsList = document.getElementById("contactsList");
+  contactsList.innerHTML = "";
+  
+  contacts.forEach((contact) => {
+    const contactItem = document.createElement("li");
+    contactItem.classList.add("contact-item");
+    contactItem.innerHTML = `
+      <div class="contact-info">
+        <span class="contact-name">${contact.fullname}</span>
+        <span class="contact-phone">${contact.phone}</span>
+        <span class="contact-email">${contact.email}</span>
+      </div>
+      <button class="edit-contact-btn" data-id="${contact.id}">Edit</button>
+      <button class="delete-contact-btn" data-id="${contact.id}">Delete</button>
+    `;
+
+    contactItem.querySelector(".edit-contact-btn").addEventListener("click", () => showContactModal(contact));
+    contactItem.querySelector(".delete-contact-btn").addEventListener("click", () => deleteContact(contact.id));
+    const addContactBtn = document.getElementById("addContactBtn");
+      addContactBtn.addEventListener("click", () => {
+        showContactModal();
+      });
+    
+  
+    // Search contact logic
+    const searchContact = document.getElementById("searchContact");
+    
+      searchContact.addEventListener("input", (e) => {
+        filterContacts(e.target.value);
+      });
+
+
+    // Handle contact form submission
+  document.getElementById("contactForm")?.addEventListener("submit", (event) => {
+    event.preventDefault();
+    handleAddContact();
+  });
+
+  // Handle modal cancel
+  document.getElementById("cancelModalBtn")?.addEventListener("click", closeContactModal);
+
+
+    
+    
+    
+    contactsList.appendChild(contactItem);
+  });
+}
+
+// Function to handle adding a new contact
+function handleAddContact() {
+  const fullname = document.getElementById("contactName").value.trim();
+  const phone = document.getElementById("contactPhone").value.trim();
+  const email = document.getElementById("contactEmail").value.trim();
+
+  if (!fullname || !phone || !email) {
+    alert("Please fill in all the fields");
+    return;
+  }
+
+  const contactData = { fullname, phone, email };
+  const xhr = new FXMLHttpRequest();
+  xhr.open("POST", "/contacts");
+  xhr.onreadystatechange = function () {
+    if (xhr.readyState === 4) {
+      console.log("[handleAddContact] Server Response:", xhr.status, xhr.responseText);
+      
+      if (xhr.status === 201) {
+        console.log("[handleAddContact] Contact added successfully.");
+        fetchContacts();
+        closeContactModal();
+      } else {
+        alert("Error adding contact: " + xhr.responseText);
+      }
+    }
+  };
+  xhr.setRequestHeader("Content-Type", "application/json");
+  xhr.send(JSON.stringify(contactData));
+}
+
+// Function to delete a contact
+function deleteContact(contactId) {
+  const xhr = new FXMLHttpRequest();
+  xhr.open("DELETE", `/contacts/${contactId}`);
+  xhr.onreadystatechange = function () {
+    if (xhr.readyState === 4 && xhr.status === 200) {
+      fetchContacts();
+    }
+  };
+  xhr.send();
+}
+
+// Function to filter contacts based on search query
+function filterContacts(query) {
+  const contactsList = document.getElementById("contactsList");
+  const items = contactsList.getElementsByClassName("contact-item");
+  Array.from(items).forEach((item) => {
+    const name = item.querySelector(".contact-name").textContent.toLowerCase();
+    if (name.includes(query.toLowerCase())) {
+      item.style.display = "block";
+    } else {
+      item.style.display = "none";
+    }
+  });
+}
+
 
 // Handle logout: clear session info and redirect to login
 function handleLogout() {
@@ -91,6 +261,7 @@ function handleLogin() {
         console.log("[App] Login successful:", response);
         document.getElementById("logoutBtn").style.display = "inline-block";
         location.hash = "#/contacts";
+        fetchContacts();
       } else {
         console.error("[App] Login error:", response.error);
         showLoginError(response.error || "Login error. Please try again later.");
@@ -112,10 +283,10 @@ function handleRegister() {
   const confirmPassword = document.getElementById("confirmPassword")?.value.trim();
 
   // Basic validations for registration
-  if (!fullname || !email || !password || !confirmPassword) {
-    console.warn("[App] Registration validation failed: Missing required fields.");
-    return showRegisterError("Please fill in all required fields.");
-  }
+  //if (!fullname || !email || !password || !confirmPassword) {
+  //  console.warn("[App] Registration validation failed: Missing required fields.");
+  //  return showRegisterError("Please fill in all required fields.");
+  //}
   if (password !== confirmPassword) {
     console.warn("[App] Registration validation failed: Passwords do not match.");
     return showRegisterError("Passwords do not match.");
