@@ -37,7 +37,7 @@ const usersServer = (() => {
     }
     // Regex: At least 8 characters, one uppercase, one lowercase, and one number.
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,}$/;
-    if (!passwordRegex.test(password)) {
+    /*if (!passwordRegex.test(password)) {
       console.warn("[usersServer] Password does not meet complexity requirements for email:", email);
       return {
         status: 400,
@@ -46,7 +46,7 @@ const usersServer = (() => {
             "Password must be at least 8 characters long and include at least one uppercase letter, one lowercase letter, and one number."
         }
       };
-    }
+    }*/
     if (dbAPI.findUser(email)) {
       console.warn("[usersServer] User already exists for email:", email);
       return { status: 409, response: { error: "User already exists" } };

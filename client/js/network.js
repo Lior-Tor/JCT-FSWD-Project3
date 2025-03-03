@@ -2,7 +2,7 @@
 const Network = (() => {
   const minDelay = 1000;
   const maxDelay = 3000;
-  const lossProbability = 0.3;
+  const lossProbability = 0;
 
   // Dispatch request to the appropriate fake server
   function serverDispatcher(request, callback) {
