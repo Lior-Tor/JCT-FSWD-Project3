@@ -1,7 +1,7 @@
 /* network.js */
 const Network = (() => {
-  const minDelay = 1000;
-  const maxDelay = 3000;
+  const minDelay = 0;
+  const maxDelay = 0;
   const lossProbability = 0;
 
   // Dispatch request to the appropriate fake server

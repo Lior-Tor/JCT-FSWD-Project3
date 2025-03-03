@@ -82,40 +82,51 @@
     </template>
 
     <!-- Contacts template -->
-    <template id="contactsTemplate">
-      <section class="contacts-view">
-        <header class="contacts-header">
-          <h2>My Contacts</h2>
-          <div class="contacts-actions">
-            <input type="text" id="searchContact" placeholder="Search contacts..." />
-            <button id="addContactBtn">Add Contact</button>
-          </div>
-        </header>
-        <ul id="contactsList" class="contacts-list">
-          <!-- Dynamically loaded contacts will be injected here -->
-        </ul>
-    
-        <!-- Modal for adding and editing contacts -->
-        <div id="contactModal" class="modal" style="display: none;">
-          <div class="modal-content">
-            <h3 id="modalTitle">Add Contact</h3>
-            <form id="contactForm">
-              <label for="contactName">Full Name</label>
-              <input type="text" id="contactName" name="fullname" placeholder="Enter full name" required />
-    
-              <label for="contactPhone">Phone</label>
-              <input type="text" id="contactPhone" name="phone" placeholder="Enter phone number" required />
-    
-              <label for="contactEmail">Email</label>
-              <input type="email" id="contactEmail" name="email" placeholder="Enter email address" required />
-    
-              <button type="submit">Save Contact</button>
-              <button type="button" id="cancelModalBtn">Cancel</button>
-            </form>
-          </div>
+<template id="contactsTemplate">
+  <section class="contacts-view">
+    <header class="contacts-header">
+      <h2>My Contacts</h2>
+      <div class="contacts-actions">
+        <input type="text" id="searchContact" placeholder="Search contacts..." />
+        <button id="addContactBtn">Add Contact</button>
+      </div>
+    </header>
+
+    <!-- Liste des contacts déjà incluse -->
+    <ul id="contactsList" class="contacts-list">
+      <li class="contact-item">
+        <div class="contact-info">
+          <span class="contact-name">Example Name</span>
+          <span class="contact-phone">+123456789</span>
+          <span class="contact-email">example@email.com</span>
         </div>
-      </section>
-    </template>
+        <button class="edit-contact-btn">Edit</button>
+        <button class="delete-contact-btn">Delete</button>
+      </li>
+    </ul>
+
+    <!-- Modal for adding and editing contacts -->
+    <div id="contactModal" class="modal" style="display: none;">
+      <div class="modal-content">
+        <h3 id="modalTitle">Add Contact</h3>
+        <form id="contactForm">
+          <label for="contactName">Full Name</label>
+          <input type="text" id="contactName" name="fullname" placeholder="Enter full name" required />
+
+          <label for="contactPhone">Phone</label>
+          <input type="text" id="contactPhone" name="phone" placeholder="Enter phone number" required />
+
+          <label for="contactEmail">Email</label>
+          <input type="email" id="contactEmail" name="email" placeholder="Enter email address" required />
+
+          <button type="submit">Save Contact</button>
+          <button type="button" id="cancelModalBtn">Cancel</button>
+        </form>
+      </div>
+    </div>
+  </section>
+</template>
+
     
     <!-- Script includes -->
     <script src="../server/dbAPI.js"></script>

@@ -9,6 +9,14 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log("[App] No hash detected. Redirecting to #/login");
     location.hash = "#/login";
   }
+  if (location.hash == "#/contacts") {
+    console.log(location.hash);
+    document.getElementById("logoutBtn").style.display = "inline-block";
+    document.getElementById("addContactBtn")?.addEventListener("click", () => {
+      showContactModal();
+    });
+    fetchContacts();
+  }
 
   // Header navigation buttons
   const homeBtn = document.getElementById("homeBtn");
@@ -102,7 +110,7 @@ function closeContactModal() {
   document.getElementById("contactModal").style.display = "none";
 }
 
-// Function to fetch contacts and display them
+// Fonction pour récupérer les contacts
 function fetchContacts() {
   const xhr = new FXMLHttpRequest();
   xhr.open("GET", "/contacts");
@@ -115,11 +123,12 @@ function fetchContacts() {
   xhr.send();
 }
 
-// Function to render contacts
+// Fonction pour afficher les contacts
 function renderContacts(contacts) {
   const contactsList = document.getElementById("contactsList");
-  contactsList.innerHTML = "";
-  
+
+  contactsList.innerHTML = ""; // Nettoie les anciens éléments avant d'ajouter les nouveaux
+
   contacts.forEach((contact) => {
     const contactItem = document.createElement("li");
     contactItem.classList.add("contact-item");
@@ -135,36 +144,33 @@ function renderContacts(contacts) {
 
     contactItem.querySelector(".edit-contact-btn").addEventListener("click", () => showContactModal(contact));
     contactItem.querySelector(".delete-contact-btn").addEventListener("click", () => deleteContact(contact.id));
-    const addContactBtn = document.getElementById("addContactBtn");
-      addContactBtn.addEventListener("click", () => {
-        showContactModal();
-      });
-    
-  
-    // Search contact logic
-    const searchContact = document.getElementById("searchContact");
-    
-      searchContact.addEventListener("input", (e) => {
-        filterContacts(e.target.value);
-      });
 
-
-    // Handle contact form submission
-  document.getElementById("contactForm")?.addEventListener("submit", (event) => {
-    event.preventDefault();
-    handleAddContact();
-  });
-
-  // Handle modal cancel
-  document.getElementById("cancelModalBtn")?.addEventListener("click", closeContactModal);
-
-
-    
-    
-    
     contactsList.appendChild(contactItem);
   });
+
+  // Ajout d'un contact
+document.getElementById("addContactBtn")?.addEventListener("click", () => {
+  showContactModal();
+});
+
+// Recherche de contacts
+document.getElementById("searchContact")?.addEventListener("input", (e) => {
+  filterContacts(e.target.value);
+});
+
+// Gestion du formulaire
+document.getElementById("contactForm")?.addEventListener("submit", (event) => {
+  event.preventDefault();
+  handleAddContact();
+});
+
+// Fermeture du modal
+document.getElementById("cancelModalBtn")?.addEventListener("click", closeContactModal);
+
+
 }
+
+
 
 // Function to handle adding a new contact
 function handleAddContact() {
