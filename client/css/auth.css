@@ -65,7 +65,7 @@ main {
   align-items: center;
   justify-content: center;
   padding: 2em;
-  background-image: url('../images/login-registration-banner.png');
+  background-image: url('../../images/login-registration-banner.png');
   background-size: cover;
   background-position: center;
 }
