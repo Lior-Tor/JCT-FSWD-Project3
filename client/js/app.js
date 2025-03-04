@@ -1,5 +1,6 @@
 /* app.js */
-
+let isEditing = false;
+let Id = null;
 document.addEventListener("DOMContentLoaded", () => {
   console.log("[App] DOM fully loaded.");
   
@@ -24,6 +25,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const contactBtn = document.getElementById("contactBtn");
   const logoutBtn = document.getElementById("logoutBtn");
   const addContactBtn = document.getElementById("addContactBtn");
+
+
+  
 
   if (homeBtn) {
     homeBtn.addEventListener("click", () => {
@@ -66,8 +70,9 @@ document.addEventListener("DOMContentLoaded", () => {
   // Handle contact form submission
   document.getElementById("contactForm")?.addEventListener("submit", (event) => {
     event.preventDefault();
-    handleAddContact();
+    handleAddandUpdateContact();
   });
+ 
 
   // Handle modal cancel
   document.getElementById("cancelModalBtn")?.addEventListener("click", closeContactModal);
@@ -87,7 +92,8 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // Function to show contact modal (for adding or editing)
-function showContactModal(contact = null) {
+function showContactModal(contact = null,id) {
+  Id = id;
   const modal = document.getElementById("contactModal");
   if (modal) {
     modal.style.display = "block";
@@ -99,6 +105,14 @@ function showContactModal(contact = null) {
       document.getElementById("contactName").value = contact.fullname;
       document.getElementById("contactPhone").value = contact.phone;
       document.getElementById("contactEmail").value = contact.email;
+
+      isEditing = true;
+
+      //document.getElementById("contactForm")?.addEventListener("submit", (event) => {
+      //  event.preventDefault();
+      //  UpdateContact(id);
+      //});
+      
     } else {
       document.getElementById("contactForm").reset();
     }
@@ -108,6 +122,7 @@ function showContactModal(contact = null) {
 // Function to close the modal
 function closeContactModal() {
   document.getElementById("contactModal").style.display = "none";
+  isEditing = false;
 }
 
 // Fonction pour récupérer les contacts
@@ -142,7 +157,7 @@ function renderContacts(contacts) {
       <button class="delete-contact-btn" data-id="${contact.id}">Delete</button>
     `;
 
-    contactItem.querySelector(".edit-contact-btn").addEventListener("click", () => showContactModal(contact));
+    contactItem.querySelector(".edit-contact-btn").addEventListener("click", () => showContactModal(contact,contact.id));
     contactItem.querySelector(".delete-contact-btn").addEventListener("click", () => deleteContact(contact.id));
 
     contactsList.appendChild(contactItem);
@@ -159,10 +174,10 @@ document.getElementById("searchContact")?.addEventListener("input", (e) => {
 });
 
 // Gestion du formulaire
-document.getElementById("contactForm")?.addEventListener("submit", (event) => {
-  event.preventDefault();
-  handleAddContact();
-});
+//document.getElementById("contactForm")?.addEventListener("submit", (event) => {
+//  event.preventDefault();
+//  handleAddContact();
+//});
 
 // Fermeture du modal
 document.getElementById("cancelModalBtn")?.addEventListener("click", closeContactModal);
@@ -173,7 +188,7 @@ document.getElementById("cancelModalBtn")?.addEventListener("click", closeContac
 
 
 // Function to handle adding a new contact
-function handleAddContact() {
+function handleAddandUpdateContact() {
   const fullname = document.getElementById("contactName").value.trim();
   const phone = document.getElementById("contactPhone").value.trim();
   const email = document.getElementById("contactEmail").value.trim();
@@ -183,25 +198,53 @@ function handleAddContact() {
     return;
   }
 
+  
+
   const contactData = { fullname, phone, email };
   const xhr = new FXMLHttpRequest();
-  xhr.open("POST", "/contacts");
-  xhr.onreadystatechange = function () {
-    if (xhr.readyState === 4) {
-      console.log("[handleAddContact] Server Response:", xhr.status, xhr.responseText);
+
+  if(isEditing){
+    
+    xhr.open("PUT", `/contacts/${Id}`);
+    xhr.onreadystatechange = function () {
+      if (xhr.readyState === 4) {
+        console.log("[updateContact] Server Response:", xhr.status, xhr.responseText);
       
-      if (xhr.status === 201) {
-        console.log("[handleAddContact] Contact added successfully.");
-        fetchContacts();
-        closeContactModal();
-      } else {
-        alert("Error adding contact: " + xhr.responseText);
+        if (xhr.status === 200) { // Correction ici (attend 200 au lieu de 201)
+          console.log("[updateContact] Contact updated successfully.");
+          fetchContacts();
+          closeContactModal();
+        } else {
+          alert("Error updating contact: " + xhr.responseText);
+        }
       }
-    }
-  };
-  xhr.setRequestHeader("Content-Type", "application/json");
-  xhr.send(JSON.stringify(contactData));
+    };
+    xhr.setRequestHeader("Content-Type", "application/json");
+    xhr.send(JSON.stringify(contactData));
+
+  }
+
+  else{
+    xhr.open("POST", "/contacts");
+    xhr.onreadystatechange = function () {
+      if (xhr.readyState === 4) {
+        console.log("[handleAddContact] Server Response:", xhr.status, xhr.responseText);
+      
+        if (xhr.status === 201) {
+          console.log("[handleAddContact] Contact added successfully.");
+          fetchContacts();
+          closeContactModal();
+        } else {
+          alert("Error adding contact: " + xhr.responseText);
+        }
+      }
+    };
+    xhr.setRequestHeader("Content-Type", "application/json");
+    xhr.send(JSON.stringify(contactData));
+
+  }
 }
+
 
 // Function to delete a contact
 function deleteContact(contactId) {
@@ -288,11 +331,6 @@ function handleRegister() {
   const password = document.getElementById("password")?.value.trim();
   const confirmPassword = document.getElementById("confirmPassword")?.value.trim();
 
-  // Basic validations for registration
-  //if (!fullname || !email || !password || !confirmPassword) {
-  //  console.warn("[App] Registration validation failed: Missing required fields.");
-  //  return showRegisterError("Please fill in all required fields.");
-  //}
   if (password !== confirmPassword) {
     console.warn("[App] Registration validation failed: Passwords do not match.");
     return showRegisterError("Passwords do not match.");

@@ -20,24 +20,66 @@ const contactsServer = (() => {
   const addContact = (body) => {
     console.log("[contactsServer] addContact called with body:", body);
     const { fullname, phone, email } = body;
+    
     if (!fullname || !phone || !email) {
       console.warn("[contactsServer] Missing required fields");
       return { status: 400, response: { error: "Missing required fields" } };
     }
+  
+    // Vérifier si un contact avec le même numéro existe déjà
+    const existingContact = dbAPI.findContactByPhone(phone);
+    if (existingContact) {
+      console.warn("[contactsServer] Contact already exists with phone:", phone);
+      return { status: 409, response: { error: "A contact with this phone number already exists" } };
+    }
+  
     const newContact = dbAPI.addContact({ fullname, phone, email });
     console.log("[contactsServer] Contact added:", newContact);
     return { status: 201, response: { message: "Contact added", contact: newContact } };
   };
 
+
   const updateContact = (id, body) => {
     console.log("[contactsServer] updateContact called with id:", id, "and body:", body);
+  
+    // Si l'ID n'est pas fourni, essayer de retrouver le contact via son téléphone
+    if (!id && body.phone) {
+      console.log("[contactsServer] No ID provided, searching by phone:", body.phone);
+      const existingContact = dbAPI.findContactByPhone(body.phone);
+  
+      if (existingContact) {
+        id = existingContact.id; // Récupération de l'ID
+        console.log("[contactsServer] Found contact ID:", id);
+      } else {
+        console.warn("[contactsServer] No contact found with phone:", body.phone);
+        return { status: 404, response: { error: "Contact non trouvé avec ce numéro" } };
+      }
+    }
+  
+    // Vérifier si l'ID est valide après la recherche
+    if (!id) {
+      console.warn("[contactsServer] Aucun ID valide pour la mise à jour");
+      return { status: 400, response: { error: "ID du contact manquant" } };
+    }
+  
+    // Vérifier si un autre contact utilise déjà ce numéro
+    if (body.phone) {
+      const existingContact = dbAPI.findContactByPhone(body.phone);
+      if (existingContact && existingContact.id !== id) {
+        console.warn("[contactsServer] Ce numéro est déjà utilisé par un autre contact:", body.phone);
+        return { status: 409, response: { error: "Ce numéro est déjà utilisé par un autre contact" } };
+      }
+    }
+  
+    // Mise à jour du contact dans la base de données
     const updated = dbAPI.updateContact(id, body);
+  
     if (updated) {
-      console.log("[contactsServer] Contact updated:", updated);
-      return { status: 200, response: { message: "Contact updated", contact: updated } };
+      console.log("[contactsServer] Contact mis à jour:", updated);
+      return { status: 200, response: { message: "Contact mis à jour", contact: updated } };
     } else {
-      console.warn("[contactsServer] Contact not found for update with id:", id);
-      return { status: 404, response: { error: "Contact not found" } };
+      console.warn("[contactsServer] Contact non trouvé pour mise à jour avec id:", id);
+      return { status: 404, response: { error: "Contact non trouvé" } };
     }
   };
 

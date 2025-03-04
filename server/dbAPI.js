@@ -42,6 +42,7 @@ const dbAPI = (() => {
     return found;
   };
 
+
   // Add a new user
   const addUser = (user) => {
     console.log("[dbAPI] addUser called with user:", user);
@@ -50,6 +51,15 @@ const dbAPI = (() => {
     saveUsers(users);
     return user;
   };
+
+  const findContactByPhone = (phone) => {
+    console.log("[dbAPI] findContactByPhone called for phone:", phone);
+    const contacts = getContacts();
+    const found = contacts.find(c => c.phone === phone);
+    console.log("[dbAPI] findContactByPhone result:", found);
+    return found;
+  };
+  
 
   /* Contacts functions */
   const getContacts = () => {
@@ -86,23 +96,31 @@ const dbAPI = (() => {
     contact.id = generateContactId();
     contacts.push(contact);
     saveContacts(contacts);
-    console.log("[dbAPI] Contact added:", contact);
+    console.log("[dbAPI] Contact added:", contact , contacts);
     return contact;
   };
 
-  // Update a contact by ID
   const updateContact = (id, newData) => {
     console.log("[dbAPI] updateContact called for id:", id, "with newData:", newData);
-    const contacts = getContacts();
+  
+    let contacts = getContacts();
+    if (!contacts || contacts.length === 0) {
+      console.warn("[dbAPI] Aucun contact trouvé dans la base de données.");
+      return null;
+    }
+  
     const index = contacts.findIndex(c => c.id === id);
     if (index > -1) {
+      // Mise à jour seulement des champs fournis, sans écraser l'entrée complète
       contacts[index] = { ...contacts[index], ...newData };
       saveContacts(contacts);
-      console.log("[dbAPI] Contact updated:", contacts[index]);
+  
+      console.log("[dbAPI] Contact mis à jour:", contacts[index]);
       return contacts[index];
+    } else {
+      console.warn("[dbAPI] Contact non trouvé pour mise à jour avec id:", id);
+      return null;
     }
-    console.warn("[dbAPI] Contact not found for update with id:", id);
-    return null;
   };
 
   // Delete a contact by ID
@@ -125,6 +143,7 @@ const dbAPI = (() => {
     findUser,
     addUser,
     getContacts,
+    findContactByPhone,
     findContactById,
     addContact,
     updateContact,
