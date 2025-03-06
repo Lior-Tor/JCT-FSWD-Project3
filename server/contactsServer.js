@@ -19,7 +19,7 @@ const contactsServer = (() => {
 
   const addContact = (body) => {
     console.log("[contactsServer] addContact called with body:", body);
-    const { fullname, phone, email } = body;
+    const { fullname, phone, email, curent } = body;
     
     if (!fullname || !phone || !email) {
       console.warn("[contactsServer] Missing required fields");
@@ -33,7 +33,7 @@ const contactsServer = (() => {
       return { status: 409, response: { error: "A contact with this phone number already exists" } };
     }
   
-    const newContact = dbAPI.addContact({ fullname, phone, email });
+    const newContact = dbAPI.addContact(body);
     console.log("[contactsServer] Contact added:", newContact);
     return { status: 201, response: { message: "Contact added", contact: newContact } };
   };

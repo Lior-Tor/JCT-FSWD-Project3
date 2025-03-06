@@ -1,6 +1,7 @@
 /* app.js */
 let isEditing = false;
 let Id = null;
+let currentUser;
 document.addEventListener("DOMContentLoaded", () => {
   console.log("[App] DOM fully loaded.");
   
@@ -128,6 +129,37 @@ function closeContactModal() {
 // Fonction pour récupérer les contacts
 function fetchContacts() {
   const xhr = new FXMLHttpRequest();
+
+
+  xhr.open("POST", "/users/getcurentuser", true);
+    xhr.setRequestHeader("Content-Type", "application/json");
+
+    console.log("Envoi de la requête pour récupérer le current user...");
+
+    xhr.onreadystatechange = function () {
+        console.log("ReadyState changé:", xhr.readyState);
+        
+        if (true) {
+          console.log("[fetchCurrentUser] Response:", xhr.status, xhr.responseText);
+      
+          if (true) {
+              try {
+                  const response = JSON.parse(xhr.responseText);
+                  const currentUser = response.response.user; 
+                  console.log("Current User:", currentUser);
+              } catch (error) {
+                  console.error("Erreur de parsing JSON :", error);
+              }
+          } else {
+              console.error("Erreur lors de la récupération du current user, statut :", xhr.status);
+          }
+      }
+    };
+
+    xhr.send();
+
+  xhr.setRequestHeader("Content-Type", "application/json");
+
   xhr.open("GET", "/contacts");
   xhr.onreadystatechange = function () {
     if (xhr.readyState === 4 && xhr.status === 200) {
@@ -174,10 +206,10 @@ document.getElementById("searchContact")?.addEventListener("input", (e) => {
 });
 
 // Gestion du formulaire
-//document.getElementById("contactForm")?.addEventListener("submit", (event) => {
-//  event.preventDefault();
-//  handleAddContact();
-//});
+document.getElementById("contactForm")?.addEventListener("submit", (event) => {
+  event.preventDefault();
+  handleAddandUpdateContact();
+});
 
 // Fermeture du modal
 document.getElementById("cancelModalBtn")?.addEventListener("click", closeContactModal);
@@ -200,7 +232,7 @@ function handleAddandUpdateContact() {
 
   
 
-  const contactData = { fullname, phone, email };
+  const contactData = { fullname, phone, email, currentUser };
   const xhr = new FXMLHttpRequest();
 
   if(isEditing){
@@ -275,6 +307,30 @@ function filterContacts(query) {
 
 // Handle logout: clear session info and redirect to login
 function handleLogout() {
+
+  currentUser = null;
+  const contactData = "null";
+  const xhr = new FXMLHttpRequest();
+
+    
+    xhr.open("POST", "/users/setcurentuser");    
+    xhr.onreadystatechange = function () {
+      if (xhr.readyState === 4) {
+        console.log("[updatecurrentUser] currentUser Response:", xhr.status, xhr.responseText);
+      
+        if (xhr.status === 201) { // Correction ici (attend 200 au lieu de 201)
+          console.log("[updatecurrentUser] currentUser updated successfully.");
+          fetchContacts();
+          closeContactModal();
+        } else {
+          alert("Error updating currentUser: " + xhr.responseText);
+        }
+      }
+    };
+    xhr.setRequestHeader("Content-Type", "application/json");
+    xhr.send(JSON.stringify(contactData));
+
+  
   console.log("[App] Handling logout.");
   document.getElementById("logoutBtn").style.display = "none";
   location.hash = "#/login";
@@ -293,7 +349,27 @@ function handleLogin() {
     return showLoginError("Please enter both email and password.");
   }
 
+
+  currentUser = email;
   const xhr = new FXMLHttpRequest();
+
+  xhr.open("POST", "/users/setcurentuser");    
+  xhr.onreadystatechange = function () {
+    if (xhr.readyState === 4) {
+      console.log("[updatecurrentUser] currentUser Response:", xhr.status, xhr.responseText);
+    
+      if (xhr.status === 200) { // Correction ici (attend 200 au lieu de 201)
+        console.log("[updatecurrentUser] currentUser updated successfully.");
+        fetchContacts();
+        closeContactModal();
+      } else {
+        alert("Error updating currentUser: " + xhr.responseText);
+      }
+    }
+  };
+  xhr.setRequestHeader("Content-Type", "application/json");
+  xhr.send(JSON.stringify(currentUser));
+
   xhr.open("POST", "/users/login");
   
   xhr.onreadystatechange = function () {

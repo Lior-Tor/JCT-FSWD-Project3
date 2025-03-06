@@ -37,7 +37,7 @@ const usersServer = (() => {
     }
     // Regex: At least 8 characters, one uppercase, one lowercase, and one number.
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,}$/;
-    if (!passwordRegex.test(password)) {
+    /*if (!passwordRegex.test(password)) {
       console.warn("[usersServer] Password does not meet complexity requirements for email:", email);
       return {
         status: 400,
@@ -46,16 +46,43 @@ const usersServer = (() => {
             "Password must be at least 8 characters long and include at least one uppercase letter, one lowercase letter, and one number."
         }
       };
-    }
+    }*/
     if (dbAPI.findUser(email)) {
       console.warn("[usersServer] User already exists for email:", email);
       return { status: 409, response: { error: "User already exists" } };
     }
-    const newUser = { fullname, email, password };
+    const newUser = { fullname, email, password, items: [] };
     dbAPI.addUser(newUser);
     console.log("[usersServer] Registration successful for user:", newUser);
     return { status: 201, response: { message: "Registration successful", user: newUser } };
   };
+
+  const setcurentuser = (body) => {
+    console.log("[usersServer] the curentuser is:", body);
+    
+    if (!body) {
+      console.warn("[usersServer] Missing required fields");
+      return { status: 400, response: { error: "Missing required fields" } };
+    }
+    
+    dbAPI.setcurrentUser(JSON.stringify(body));  // Sauvegarde correctement en localStorage
+    console.log("[usersServer] add curentuser:", body);
+    
+    return { status: 201, response: { message: "curentuser add successful", user: body } };
+  };
+
+  const getcurentuser = () => {
+    let result = dbAPI.getcurrentUser(); // Devrait être une chaîne simple
+    console.log("[usersServer] curentuser:", result);
+
+    return {
+      status: 201,
+      response: { result }
+  };
+  };
+
+ 
+
 
   // Handle incoming requests to /users/login and /users/register.
   const handleRequest = (request, callback) => {
@@ -64,7 +91,12 @@ const usersServer = (() => {
     let result;
     if (method === "POST" && url.includes("/users/login")) {
       result = login(body);
-    } else if (method === "POST" && url.includes("/users/register")) {
+    } else if (method === "POST" && url.includes("/users/setcurentuser")) {
+      result = setcurentuser(body);
+    } else if (method === "POST" && url.includes("/users/getcurentuser")) {
+      result = getcurentuser();
+      callback(null, JSON.stringify(result)); // Assurez-vous que c'est bien un JSON stringifié
+  } else if (method === "POST" && url.includes("/users/register")) {
       result = register(body);
     } else {
       console.warn("[usersServer] Invalid endpoint:", url);

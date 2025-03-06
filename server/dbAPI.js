@@ -1,6 +1,7 @@
 /* dbAPI.js */
 const dbAPI = (() => {
   const USERS_KEY = "usersDB";
+  const CURRENT_USERS_KEY = "currentusersDB";
   const CONTACTS_KEY = "contactsDB";
   const CONTACTS_ID_KEY = "contactsIdCounter";
 
@@ -8,6 +9,11 @@ const dbAPI = (() => {
   if (!localStorage.getItem(USERS_KEY)) {
     localStorage.setItem(USERS_KEY, JSON.stringify([]));
     console.log("[dbAPI] Initialized users database.");
+  }
+
+  if (!localStorage.getItem(CURRENT_USERS_KEY)) {
+    localStorage.setItem(CURRENT_USERS_KEY, "null");
+    console.log("[dbAPI] Initialized curentusers database.");
   }
 
   // Initialize contacts database if not present.
@@ -28,6 +34,20 @@ const dbAPI = (() => {
     console.log("[dbAPI] getUsers called. Users:", users);
     return users;
   };
+
+
+  const getcurrentUser = () => {
+    const userData = JSON.parse(localStorage.getItem(CURRENT_USERS_KEY));
+    console.log("[dbAPI] getcurrentUser called. User:", userData);
+    return userData;
+   
+  };
+
+  const setcurrentUser = (user) => {  
+    localStorage.setItem(CURRENT_USERS_KEY, JSON.stringify(user));  // Convertir en JSON
+    console.log("[dbAPI] setcurrentUser called. User saved:", user);
+  };
+
   const saveUsers = (users) => {
     localStorage.setItem(USERS_KEY, JSON.stringify(users));
     console.log("[dbAPI] saveUsers called. Users saved:", users);
@@ -100,6 +120,8 @@ const dbAPI = (() => {
     return contact;
   };
 
+  
+
   const updateContact = (id, newData) => {
     console.log("[dbAPI] updateContact called for id:", id, "with newData:", newData);
   
@@ -139,6 +161,8 @@ const dbAPI = (() => {
   };
 
   return {
+    getcurrentUser,
+    setcurrentUser,
     getUsers,
     findUser,
     addUser,

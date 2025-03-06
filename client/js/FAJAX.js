@@ -28,30 +28,40 @@ class FXMLHttpRequest {
   send(body = null) {
     this.readyState = 2;
     if (this.onreadystatechange) {
-      this.onreadystatechange();
+        this.onreadystatechange();
     }
 
-    // Send the request through our simulated Network
-    Network.send(
-      {
+    console.log("[FXMLHttpRequest] Envoi de la requête :", {
         method: this._method,
         url: this._url,
         headers: this._headers,
         body: body
-      },
-      (error, response) => {
-        if (error) {
-          this.status = 0;
-          this.responseText = "";
-        } else {
-          this.status = response.status;
-          this.responseText = response.responseText;
+    });
+
+    // Envoi au simulateur Network
+    Network.send(
+        {
+            method: this._method,
+            url: this._url,
+            headers: this._headers,
+            body: body
+        },
+        (error, response) => {
+            console.log("[FXMLHttpRequest] Réponse reçue :", { error, response });
+
+            if (error) {
+                this.status = 0;
+                this.responseText = "";
+            } else {
+                this.status = response.status;
+                this.responseText = response.responseText;
+            }
+
+            this.readyState = 4;
+            if (this.onreadystatechange) {
+                this.onreadystatechange();
+            }
         }
-        this.readyState = 4;
-        if (this.onreadystatechange) {
-          this.onreadystatechange();
-        }
-      }
     );
-  }
+}
 }
