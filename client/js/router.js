@@ -19,22 +19,26 @@ const Router = (() => {
       appContainer.innerHTML = ""; // Clear the app container
       appContainer.appendChild(clone); // Inject the template content
       console.log("[Router] View loaded successfully.");
+      // If contacts view loaded, call fetchContacts() to render contacts
+      if (route === "/contacts" && typeof fetchContacts === "function") {
+        fetchContacts();
+      }
     } else {
       document.getElementById("app").innerHTML = `<p>Error loading view</p>`;
       console.error("[Router] Error: Template not found for route:", route);
     }
   };
-  
+
   const init = () => {
     console.log("[Router] Initializing router...");
     window.addEventListener("hashchange", () => { // Listen for hash changes
       const route = location.hash.replace("#", ""); // Get the new route
       console.log("[Router] Detected hash change. New route:", route);
-      loadView(route); // Run the loadView function with the new route
+      loadView(route); // Load the view corresponding to the new route
     });
     const initialRoute = location.hash.replace("#", "") || "/login";
     console.log("[Router] Loading initial route:", initialRoute);
-    loadView(initialRoute); // Run the loadView function with the initial route
+    loadView(initialRoute);
   };
 
   return { init };

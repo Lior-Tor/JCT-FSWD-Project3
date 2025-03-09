@@ -62,10 +62,10 @@ const usersServer = (() => {
       console.log("[usersServer] Missing required fields for current user");
       return { status: 400, response: { error: "Missing required fields" } };
     }
-    dbAPI.setcurrentUser(JSON.stringify(body));
+    dbAPI.setcurrentUser(body);  // Store the plain value
     console.log("[usersServer] Current user set:", body);
     return { status: 201, response: { message: "Current user set successfully", user: body } };
-  };
+  };  
 
   // Retrieve the current user from storage
   const getcurentuser = () => {
@@ -73,7 +73,7 @@ const usersServer = (() => {
     console.log("[usersServer] getcurentuser called. Result:", result);
     return {
       status: 201,
-      response: { result }
+      response: { user: result }
     };
   };
 

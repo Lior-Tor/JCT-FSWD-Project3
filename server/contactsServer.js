@@ -33,20 +33,25 @@ const contactsServer = (() => {
   // Add a new contact and associate it with the current user
   const addContact = (body) => {
     console.log("[contactsServer] addContact called with body:", body);
-    const { fullname, phone, email } = body;
+    let { fullname, phone, email } = body;
     if (!fullname || !phone || !email) {
       console.warn("[contactsServer] Missing required fields");
       return { status: 400, response: { error: "Missing required fields" } };
     }
-    // Check for duplicate phone number (regardless of user)
-    const existingContact = dbAPI.findContactByPhone(phone);
+    // Normalize the phone number
+    phone = phone.trim();
+    // Retrieve current user
+    const currentUser = dbAPI.getcurrentUser();
+    // Get current user's contacts
+    const allContacts = dbAPI.getContacts();
+    const userContacts = allContacts.filter(contact => contact.currentUser === currentUser);
+    // Check for duplicate phone number within current user's contacts
+    const existingContact = userContacts.find(c => c.phone === phone);
     if (existingContact) {
-      console.warn("[contactsServer] Contact already exists with phone:", phone);
+      console.warn("[contactsServer] Contact already exists with phone for current user:", phone);
       return { status: 409, response: { error: "A contact with this phone number already exists" } };
     }
-    // Ensure the contact is tagged with the current user's identifier
-    const currentUser = dbAPI.getcurrentUser();
-    const newContact = dbAPI.addContact({ ...body, currentUser });
+    const newContact = dbAPI.addContact({ fullname, phone, email, currentUser });
     console.log("[contactsServer] Contact added:", newContact);
     return { status: 201, response: { message: "Contact added", contact: newContact } };
   };
@@ -54,9 +59,11 @@ const contactsServer = (() => {
   // Update an existing contact, ensuring it belongs to the current user
   const updateContact = (id, body) => {
     console.log("[contactsServer] updateContact called with id:", id, "and body:", body);
+    
+    // If no ID provided, try to find by phone (trim the phone number)
     if (!id && body.phone) {
       console.log("[contactsServer] No ID provided, searching by phone:", body.phone);
-      const existingContact = dbAPI.findContactByPhone(body.phone);
+      const existingContact = dbAPI.findContactByPhone(body.phone.trim());
       if (existingContact) {
         id = existingContact.id;
         console.log("[contactsServer] Found contact ID:", id);
@@ -69,21 +76,28 @@ const contactsServer = (() => {
       console.warn("[contactsServer] No valid ID provided for update");
       return { status: 400, response: { error: "Contact ID missing" } };
     }
-    // Verify phone uniqueness as needed (optional)
+    
+    // Normalize the phone number and perform duplicate check only among current user's contacts
     if (body.phone) {
-      const existingContact = dbAPI.findContactByPhone(body.phone);
+      const normalizedPhone = body.phone.trim();
+      const currentUser = dbAPI.getcurrentUser();
+      const userContacts = dbAPI.getContacts().filter(contact => contact.currentUser === currentUser);
+      const existingContact = userContacts.find(c => c.phone === normalizedPhone);
       if (existingContact && existingContact.id !== id) {
-        console.warn("[contactsServer] Phone number already used by another contact:", body.phone);
+        console.warn("[contactsServer] Phone number already used by another contact:", normalizedPhone);
         return { status: 409, response: { error: "This phone number is already used by another contact" } };
       }
+      body.phone = normalizedPhone; // update the phone value in the request body
     }
-    // Retrieve the contact to check ownership
+    
+    // Verify that the contact to update belongs to the current user
     const contactToUpdate = dbAPI.findContactById(id);
     const currentUser = dbAPI.getcurrentUser();
     if (!contactToUpdate || contactToUpdate.currentUser !== currentUser) {
       console.warn("[contactsServer] Access denied or contact not found for update with id:", id);
       return { status: 403, response: { error: "Access denied or contact not found" } };
     }
+    
     const updated = dbAPI.updateContact(id, body);
     if (updated) {
       console.log("[contactsServer] Contact updated:", updated);
@@ -92,7 +106,7 @@ const contactsServer = (() => {
       console.warn("[contactsServer] Contact not found for update with id:", id);
       return { status: 404, response: { error: "Contact not found" } };
     }
-  };
+  };  
 
   // Delete a contact if it belongs to the current user
   const deleteContact = (id) => {

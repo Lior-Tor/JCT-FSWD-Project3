@@ -2,21 +2,25 @@
 let isEditing = false;
 let Id = null;
 let currentUser;
+
 document.addEventListener("DOMContentLoaded", () => {
   console.log("[App] DOM fully loaded.");
-  
+
   // Initialize router and default route
   Router.init();
   if (!location.hash) {
     console.log("[App] No hash detected. Redirecting to #/login");
     location.hash = "#/login";
   }
-  if (location.hash == "#/contacts") {
-    console.log(location.hash);
+  if (location.hash === "#/contacts") {
+    console.log("[App] Route is contacts.");
     document.getElementById("logoutBtn").style.display = "inline-block";
-    document.getElementById("addContactBtn")?.addEventListener("click", () => {
-      showContactModal();
-    });
+    // Add one-time listener for add contact button if not already attached
+    const addContactBtn = document.getElementById("addContactBtn");
+    if (addContactBtn && !addContactBtn.dataset.listenerAttached) {
+      addContactBtn.addEventListener("click", () => showContactModal());
+      addContactBtn.dataset.listenerAttached = "true";
+    }
     fetchContacts();
   }
 
@@ -25,7 +29,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const helpBtn = document.getElementById("helpBtn");
   const contactBtn = document.getElementById("contactBtn");
   const logoutBtn = document.getElementById("logoutBtn");
-  const addContactBtn = document.getElementById("addContactBtn");
 
   if (homeBtn) {
     homeBtn.addEventListener("click", () => {
@@ -51,28 +54,6 @@ document.addEventListener("DOMContentLoaded", () => {
       handleLogout();
     });
   }
-  if (addContactBtn) {
-    addContactBtn.addEventListener("click", () => {
-      showContactModal();
-    });
-  }
-
-  // Search contact logic
-  const searchContact = document.getElementById("searchContact");
-  if (searchContact) {
-    searchContact.addEventListener("input", (e) => {
-      filterContacts(e.target.value);
-    });
-  }
-
-  // Handle contact form submission
-  document.getElementById("contactForm")?.addEventListener("submit", (event) => {
-    event.preventDefault();
-    handleAddandUpdateContact();
-  });
-
-  // Handle modal cancel
-  document.getElementById("cancelModalBtn")?.addEventListener("click", closeContactModal);
 
   // Global form submit listener for login and registration
   document.addEventListener("submit", (event) => {
@@ -93,19 +74,13 @@ function showContactModal(contact = null, id) {
   const modal = document.getElementById("contactModal");
   if (modal) {
     modal.style.display = "block";
-    
-    console.log("Ok");
+    console.log("[App] Showing contact modal.");
     document.getElementById("modalTitle").textContent = contact ? "Edit Contact" : "Add Contact";
-    
     if (contact) {
       document.getElementById("contactName").value = contact.fullname;
       document.getElementById("contactPhone").value = contact.phone;
       document.getElementById("contactEmail").value = contact.email;
       isEditing = true;
-      //document.getElementById("contactForm")?.addEventListener("submit", (event) => {
-      //  event.preventDefault();
-      //  UpdateContact(id);
-      //});
     } else {
       document.getElementById("contactForm").reset();
     }
@@ -114,52 +89,63 @@ function showContactModal(contact = null, id) {
 
 // Function to close the modal
 function closeContactModal() {
-  document.getElementById("contactModal").style.display = "none";
-  isEditing = false;
+  const modal = document.getElementById("contactModal");
+  if (modal) {
+    modal.style.display = "none";
+    isEditing = false;
+  }
 }
 
 // Function to retrieve contacts
 function fetchContacts() {
-  const xhr = new FXMLHttpRequest();
-  xhr.open("POST", "/users/getcurentuser", true);
-  xhr.setRequestHeader("Content-Type", "application/json");
-  console.log("Sending request for currentuser...");
-
-  xhr.onreadystatechange = function () {
-    console.log("ReadyState changed:", xhr.readyState);
-    
-    if (true) {
-      console.log("[fetchCurrentUser] Response:", xhr.status, xhr.responseText);
+  const contactsList = document.getElementById("contactsList");
+  if (!contactsList) {
+    console.log("[fetchContacts] contactsList element not found. Aborting fetchContacts.");
+    return; // Exit if contacts view isn't active
+  }
   
-      if (true) {
-          try {
-              const response = JSON.parse(xhr.responseText);
-              const currentUser = response.response.user; 
-              console.log("Current User:", currentUser);
-          } catch (error) {
-              console.error("Parsing error JSON :", error);
-          }
-      } else {
-          console.error("Erreur lors de la récupération du current user, statut :", xhr.status);
+  // Create a new XHR instance for getting the current user
+  const xhrUser = new FXMLHttpRequest();
+  xhrUser.open("POST", "/users/getcurentuser", true);
+  xhrUser.setRequestHeader("Content-Type", "application/json");
+  console.log("[fetchContacts] Sending request for current user...");
+  xhrUser.onreadystatechange = function () {
+    if (xhrUser.readyState === 4) {
+      console.log("[fetchCurrentUser] Response:", xhrUser.status, xhrUser.responseText);
+      try {
+        const response = JSON.parse(xhrUser.responseText);
+        const user = response.response.user;
+        console.log("Current User:", user);
+      } catch (error) {
+        console.error("[fetchContacts] JSON parsing error:", error);
       }
     }
   };
-
-  xhr.send();
-  xhr.setRequestHeader("Content-Type", "application/json");
-  xhr.open("GET", "/contacts");
-  xhr.onreadystatechange = function () {
-    if (xhr.readyState === 4 && xhr.status === 200) {
-      const { contacts } = JSON.parse(xhr.responseText);
-      renderContacts(contacts);
+  xhrUser.send();
+  
+  // Create a new XHR instance for fetching contacts
+  const xhrContacts = new FXMLHttpRequest();
+  xhrContacts.open("GET", "/contacts");
+  xhrContacts.onreadystatechange = function () {
+    if (xhrContacts.readyState === 4 && xhrContacts.status === 200) {
+      try {
+        const { contacts } = JSON.parse(xhrContacts.responseText);
+        renderContacts(contacts);
+      } catch (error) {
+        console.error("[fetchContacts] Error parsing contacts response:", error);
+      }
     }
   };
-  xhr.send();
+  xhrContacts.send();
 }
 
-// Function to display contacts
+// Function to display contacts and attach static event listeners only once
 function renderContacts(contacts) {
   const contactsList = document.getElementById("contactsList");
+  if (!contactsList) {
+    console.log("[renderContacts] contactsList element not found.");
+    return;
+  }
   contactsList.innerHTML = ""; // Clear existing items
 
   contacts.forEach((contact) => {
@@ -174,33 +160,45 @@ function renderContacts(contacts) {
       <button class="edit-contact-btn" data-id="${contact.id}">Edit</button>
       <button class="delete-contact-btn" data-id="${contact.id}">Delete</button>
     `;
-
-    contactItem.querySelector(".edit-contact-btn").addEventListener("click", () => showContactModal(contact,contact.id));
-    contactItem.querySelector(".delete-contact-btn").addEventListener("click", () => deleteContact(contact.id));
+    contactItem.querySelector(".edit-contact-btn").addEventListener("click", () => {
+      showContactModal(contact, contact.id);
+    });
+    contactItem.querySelector(".delete-contact-btn").addEventListener("click", () => {
+      deleteContact(contact.id);
+    });
     contactsList.appendChild(contactItem);
   });
 
-  // Adding a contact
-  document.getElementById("addContactBtn")?.addEventListener("click", () => {
-  showContactModal();
-  });
-
-  // Contact search
-  document.getElementById("searchContact")?.addEventListener("input", (e) => {
-    filterContacts(e.target.value);
-  });
-
-  // Contact form submission
-  document.getElementById("contactForm")?.addEventListener("submit", (event) => {
-    event.preventDefault();
-    handleAddandUpdateContact();
-  });
-
-  // Modal cancel
-  document.getElementById("cancelModalBtn")?.addEventListener("click", closeContactModal);
+  // Attach listener for add contact button once
+  const addContactBtn = document.getElementById("addContactBtn");
+  if (addContactBtn && !addContactBtn.dataset.listenerAttached) {
+    addContactBtn.addEventListener("click", () => showContactModal());
+    addContactBtn.dataset.listenerAttached = "true";
+  }
+  // Attach listener for search input once
+  const searchContact = document.getElementById("searchContact");
+  if (searchContact && !searchContact.dataset.listenerAttached) {
+    searchContact.addEventListener("input", (e) => filterContacts(e.target.value));
+    searchContact.dataset.listenerAttached = "true";
+  }
+  // Attach listener for contact form submission once
+  const contactForm = document.getElementById("contactForm");
+  if (contactForm && !contactForm.dataset.listenerAttached) {
+    contactForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      handleAddandUpdateContact();
+    });
+    contactForm.dataset.listenerAttached = "true";
+  }
+  // Attach listener for modal cancel button once
+  const cancelModalBtn = document.getElementById("cancelModalBtn");
+  if (cancelModalBtn && !cancelModalBtn.dataset.listenerAttached) {
+    cancelModalBtn.addEventListener("click", closeContactModal);
+    cancelModalBtn.dataset.listenerAttached = "true";
+  }
 }
 
-// Function to handle adding a new contact
+// Function to handle adding/updating a contact using new XHR instances
 function handleAddandUpdateContact() {
   const fullname = document.getElementById("contactName").value.trim();
   const phone = document.getElementById("contactPhone").value.trim();
@@ -212,55 +210,54 @@ function handleAddandUpdateContact() {
   }
 
   const contactData = { fullname, phone, email, currentUser };
-  const xhr = new FXMLHttpRequest();
-
-  if(isEditing) {
-    xhr.open("PUT", `/contacts/${Id}`);
-    xhr.onreadystatechange = function () {
-      if (xhr.readyState === 4) {
-        console.log("[updateContact] Server Response:", xhr.status, xhr.responseText);
-
-        if (xhr.status === 200) { // Correction ici (attend 200 au lieu de 201)
+  
+  if (isEditing) {
+    const xhrUpdate = new FXMLHttpRequest();
+    xhrUpdate.open("PUT", `/contacts/${Id}`);
+    xhrUpdate.setRequestHeader("Content-Type", "application/json");
+    xhrUpdate.onreadystatechange = function () {
+      if (xhrUpdate.readyState === 4) {
+        console.log("[updateContact] Server Response:", xhrUpdate.status, xhrUpdate.responseText);
+        if (xhrUpdate.status === 200) {
           console.log("[updateContact] Contact updated successfully.");
           fetchContacts();
           closeContactModal();
         } else {
-          alert("Error updating contact: " + xhr.responseText);
+          alert("Error updating contact: " + xhrUpdate.responseText);
         }
       }
     };
-    xhr.setRequestHeader("Content-Type", "application/json");
-    xhr.send(JSON.stringify(contactData));
+    xhrUpdate.send(JSON.stringify(contactData));
   } else {
-    xhr.open("POST", "/contacts");
-    xhr.onreadystatechange = function () {
-      if (xhr.readyState === 4) {
-        console.log("[handleAddContact] Server Response:", xhr.status, xhr.responseText);
-      
-        if (xhr.status === 201) {
+    const xhrAdd = new FXMLHttpRequest();
+    xhrAdd.open("POST", "/contacts");
+    xhrAdd.setRequestHeader("Content-Type", "application/json");
+    xhrAdd.onreadystatechange = function () {
+      if (xhrAdd.readyState === 4) {
+        console.log("[handleAddContact] Server Response:", xhrAdd.status, xhrAdd.responseText);
+        if (xhrAdd.status === 201) {
           console.log("[handleAddContact] Contact added successfully.");
           fetchContacts();
           closeContactModal();
         } else {
-          alert("Error adding contact: " + xhr.responseText);
+          alert("Error adding contact: " + xhrAdd.responseText);
         }
       }
     };
-    xhr.setRequestHeader("Content-Type", "application/json");
-    xhr.send(JSON.stringify(contactData));
+    xhrAdd.send(JSON.stringify(contactData));
   }
 }
 
-// Function to delete a contact
+// Function to delete a contact using its own XHR instance
 function deleteContact(contactId) {
-  const xhr = new FXMLHttpRequest();
-  xhr.open("DELETE", `/contacts/${contactId}`);
-  xhr.onreadystatechange = function () {
-    if (xhr.readyState === 4 && xhr.status === 200) {
+  const xhrDelete = new FXMLHttpRequest();
+  xhrDelete.open("DELETE", `/contacts/${contactId}`);
+  xhrDelete.onreadystatechange = function () {
+    if (xhrDelete.readyState === 4 && xhrDelete.status === 200) {
       fetchContacts();
     }
   };
-  xhr.send();
+  xhrDelete.send();
 }
 
 // Function to filter contacts based on search query
@@ -269,100 +266,93 @@ function filterContacts(query) {
   const items = contactsList.getElementsByClassName("contact-item");
   Array.from(items).forEach((item) => {
     const name = item.querySelector(".contact-name").textContent.toLowerCase();
-    if (name.includes(query.toLowerCase())) {
-      item.style.display = "block";
-    } else {
-      item.style.display = "none";
-    }
+    item.style.display = name.includes(query.toLowerCase()) ? "block" : "none";
   });
 }
 
-// Handle logout: clear session info and redirect to login
+// Handle logout: clear session info, redirect to login, and do not call fetchContacts
 function handleLogout() {
   currentUser = null;
   const contactData = "null";
-  const xhr = new FXMLHttpRequest();
-  xhr.open("POST", "/users/setcurentuser");
-  xhr.onreadystatechange = function () {
-    if (xhr.readyState === 4) {
-      console.log("[updatecurrentUser] currentUser Response:", xhr.status, xhr.responseText);
-    
-      if (xhr.status === 201) { // Correction ici (attend 200 au lieu de 201)
+  const xhrLogout = new FXMLHttpRequest();
+  xhrLogout.open("POST", "/users/setcurentuser");
+  xhrLogout.setRequestHeader("Content-Type", "application/json");
+  xhrLogout.onreadystatechange = function () {
+    if (xhrLogout.readyState === 4) {
+      console.log("[updatecurrentUser] currentUser Response:", xhrLogout.status, xhrLogout.responseText);
+      if (xhrLogout.status === 201) {
         console.log("[updatecurrentUser] currentUser updated successfully.");
-        fetchContacts();
         closeContactModal();
       } else {
-        alert("Error updating currentUser: " + xhr.responseText);
+        alert("Error updating currentUser: " + xhrLogout.responseText);
       }
     }
   };
-  xhr.setRequestHeader("Content-Type", "application/json");
-  xhr.send(JSON.stringify(contactData));
+  xhrLogout.send(JSON.stringify(contactData));
 
   console.log("[App] Handling logout.");
   document.getElementById("logoutBtn").style.display = "none";
-  location.hash = "#/login";
+  location.hash = "#/login"; // Change the route to login
   showLoginError("You have been logged out.");
 }
 
-/* Handle Login (FAJAX) */
 function handleLogin() {
   console.log("[App] Handling login.");
   const email = document.getElementById("email")?.value.trim();
   const password = document.getElementById("password")?.value.trim();
 
-  // Basic validation
   if (!email || !password) {
     console.warn("[App] Login validation failed: Missing email or password.");
     return showLoginError("Please enter both email and password.");
   }
 
   currentUser = email;
-  const xhr = new FXMLHttpRequest();
-
-  xhr.open("POST", "/users/setcurentuser");    
-  xhr.onreadystatechange = function () {
-    if (xhr.readyState === 4) {
-      console.log("[updatecurrentUser] currentUser Response:", xhr.status, xhr.responseText);
-    
-      if (xhr.status === 200) { // Correction ici (attend 200 au lieu de 201)
+  // New instance to set current user
+  const xhrSetUser = new FXMLHttpRequest();
+  xhrSetUser.open("POST", "/users/setcurentuser");
+  xhrSetUser.setRequestHeader("Content-Type", "application/json");
+  xhrSetUser.onreadystatechange = function () {
+    if (xhrSetUser.readyState === 4) {
+      console.log("[updatecurrentUser] currentUser Response:", xhrSetUser.status, xhrSetUser.responseText);
+      if (xhrSetUser.status === 201) {
         console.log("[updatecurrentUser] currentUser updated successfully.");
-        fetchContacts();
+        // Do not call fetchContacts() here; let the router handle it.
         closeContactModal();
       } else {
-        alert("Error updating currentUser: " + xhr.responseText);
+        alert("Error updating currentUser: " + xhrSetUser.responseText);
       }
     }
   };
-  xhr.setRequestHeader("Content-Type", "application/json");
-  xhr.send(JSON.stringify(currentUser));
-  xhr.open("POST", "/users/login");
-  
-  xhr.onreadystatechange = function () {
-    if (xhr.readyState === 4) {
-      console.log("[App] Login AJAX call completed with status:", xhr.status);
+  xhrSetUser.send(JSON.stringify(currentUser));
+
+  // New instance for login request
+  const xhrLogin = new FXMLHttpRequest();
+  xhrLogin.open("POST", "/users/login");
+  xhrLogin.setRequestHeader("Content-Type", "application/json");
+  xhrLogin.onreadystatechange = function () {
+    if (xhrLogin.readyState === 4) {
+      console.log("[App] Login AJAX call completed with status:", xhrLogin.status);
       let response;
       try {
-        response = JSON.parse(xhr.responseText || "{}");
+        response = JSON.parse(xhrLogin.responseText || "{}");
       } catch (err) {
         console.error("[App] Error parsing login response:", err);
         return showLoginError("Unexpected response from server.");
       }
-      if (xhr.status === 200) {
+      if (xhrLogin.status === 200) {
         console.log("[App] Login successful:", response);
         document.getElementById("logoutBtn").style.display = "inline-block";
+        // Change route to contacts; the router will load the view and call fetchContacts()
         location.hash = "#/contacts";
-        fetchContacts();
       } else {
         console.error("[App] Login error:", response.error);
         showLoginError(response.error || "Login error. Please try again later.");
       }
     }
   };
-
   const body = JSON.stringify({ email, password });
   console.log("[App] Sending login request with body:", body);
-  xhr.send(body);
+  xhrLogin.send(body);
 }
 
 /* Handle Registration (FAJAX) */
@@ -378,20 +368,20 @@ function handleRegister() {
     return showRegisterError("Passwords do not match.");
   }
 
-  const xhr = new FXMLHttpRequest();
-  xhr.open("POST", "/users/register");
-
-  xhr.onreadystatechange = function () {
-    if (xhr.readyState === 4) {
-      console.log("[App] Registration AJAX call completed with status:", xhr.status);
+  const xhrRegister = new FXMLHttpRequest();
+  xhrRegister.open("POST", "/users/register");
+  xhrRegister.setRequestHeader("Content-Type", "application/json");
+  xhrRegister.onreadystatechange = function () {
+    if (xhrRegister.readyState === 4) {
+      console.log("[App] Registration AJAX call completed with status:", xhrRegister.status);
       let response;
       try {
-        response = JSON.parse(xhr.responseText || "{}");
+        response = JSON.parse(xhrRegister.responseText || "{}");
       } catch (err) {
         console.error("[App] Error parsing registration response:", err);
         return showRegisterError("Unexpected response from server.");
       }
-      if (xhr.status === 201) {
+      if (xhrRegister.status === 201) {
         console.log("[App] Registration successful:", response);
         showRegisterError(""); // Clear any previous error
         showRegisterSuccess("Registration successful! Please log in.");
@@ -404,10 +394,9 @@ function handleRegister() {
       }
     }
   };
-
   const bodyData = JSON.stringify({ fullname, email, password, confirmPassword });
   console.log("[App] Sending registration request with body:", bodyData);
-  xhr.send(bodyData);
+  xhrRegister.send(bodyData);
 }
 
 /* Inline error message for the login form */
