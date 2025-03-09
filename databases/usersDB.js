@@ -8,21 +8,23 @@ if (!localStorage.getItem(USERS_KEY)) {
 }
 
 const usersDB = {
+  // Retrieve all users
   getAll: () => {
     const users = JSON.parse(localStorage.getItem(USERS_KEY));
     console.log("[usersDB] getAll called. Users:", users);
     return users;
   },
 
+  // Save all users
   saveAll: (users) => {
     localStorage.setItem(USERS_KEY, JSON.stringify(users));
     console.log("[usersDB] saveAll called. Users saved:", users);
   },
 
+  // Add a new user with a unique ID
   add: (user) => {
     console.log("[usersDB] add called with user:", user);
     const users = usersDB.getAll();
-    // Assign a unique id to the new user (using current timestamp)
     user.id = Date.now();
     users.push(user);
     usersDB.saveAll(users);
@@ -30,6 +32,7 @@ const usersDB = {
     return user;
   },
 
+  // Find a user by username or email
   find: (identifier) => {
     console.log("[usersDB] find called for identifier:", identifier);
     const users = usersDB.getAll();
@@ -39,7 +42,6 @@ const usersDB = {
   }
 };
 
-// For module environments or browser global
 if (typeof module !== "undefined") {
   module.exports = usersDB;
 } else {

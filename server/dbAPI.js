@@ -5,24 +5,25 @@ const dbAPI = (() => {
   const CONTACTS_KEY = "contactsDB";
   const CONTACTS_ID_KEY = "contactsIdCounter";
 
-  // Initialize users database if not present.
+  // Initialize users database if not present
   if (!localStorage.getItem(USERS_KEY)) {
     localStorage.setItem(USERS_KEY, JSON.stringify([]));
     console.log("[dbAPI] Initialized users database.");
   }
 
+  // Initialize current user storage if not present
   if (!localStorage.getItem(CURRENT_USERS_KEY)) {
     localStorage.setItem(CURRENT_USERS_KEY, "null");
-    console.log("[dbAPI] Initialized curentusers database.");
+    console.log("[dbAPI] Initialized current user storage.");
   }
 
-  // Initialize contacts database if not present.
+  // Initialize contacts database if not present
   if (!localStorage.getItem(CONTACTS_KEY)) {
     localStorage.setItem(CONTACTS_KEY, JSON.stringify([]));
     console.log("[dbAPI] Initialized contacts database.");
   }
 
-  // Initialize contacts ID counter if not present.
+  // Initialize contacts ID counter if not present
   if (!localStorage.getItem(CONTACTS_ID_KEY)) {
     localStorage.setItem(CONTACTS_ID_KEY, "1");
     console.log("[dbAPI] Initialized contacts ID counter.");
@@ -35,16 +36,16 @@ const dbAPI = (() => {
     return users;
   };
 
-
+  // Retrieve the current user
   const getcurrentUser = () => {
     const userData = JSON.parse(localStorage.getItem(CURRENT_USERS_KEY));
     console.log("[dbAPI] getcurrentUser called. User:", userData);
     return userData;
-   
   };
 
-  const setcurrentUser = (user) => {  
-    localStorage.setItem(CURRENT_USERS_KEY, JSON.stringify(user));  // Convertir en JSON
+  // Set the current user
+  const setcurrentUser = (user) => {
+    localStorage.setItem(CURRENT_USERS_KEY, JSON.stringify(user));
     console.log("[dbAPI] setcurrentUser called. User saved:", user);
   };
 
@@ -52,7 +53,7 @@ const dbAPI = (() => {
     localStorage.setItem(USERS_KEY, JSON.stringify(users));
     console.log("[dbAPI] saveUsers called. Users saved:", users);
   };
-  
+
   // Find a user by email
   const findUser = (email) => {
     console.log("[dbAPI] findUser called for email:", email);
@@ -61,7 +62,6 @@ const dbAPI = (() => {
     console.log("[dbAPI] findUser result:", found);
     return found;
   };
-
 
   // Add a new user
   const addUser = (user) => {
@@ -72,6 +72,7 @@ const dbAPI = (() => {
     return user;
   };
 
+  // Find a contact by phone number
   const findContactByPhone = (phone) => {
     console.log("[dbAPI] findContactByPhone called for phone:", phone);
     const contacts = getContacts();
@@ -79,7 +80,6 @@ const dbAPI = (() => {
     console.log("[dbAPI] findContactByPhone result:", found);
     return found;
   };
-  
 
   /* Contacts functions */
   const getContacts = () => {
@@ -87,11 +87,12 @@ const dbAPI = (() => {
     console.log("[dbAPI] getContacts called. Contacts:", contacts);
     return contacts;
   };
+
   const saveContacts = (contacts) => {
     localStorage.setItem(CONTACTS_KEY, JSON.stringify(contacts));
     console.log("[dbAPI] saveContacts called. Contacts saved:", contacts);
   };
-  
+
   // Generate a new contact ID
   const generateContactId = () => {
     let id = parseInt(localStorage.getItem(CONTACTS_ID_KEY), 10);
@@ -116,31 +117,26 @@ const dbAPI = (() => {
     contact.id = generateContactId();
     contacts.push(contact);
     saveContacts(contacts);
-    console.log("[dbAPI] Contact added:", contact , contacts);
+    console.log("[dbAPI] Contact added:", contact, contacts);
     return contact;
   };
 
-  
-
+  // Update a contact by ID
   const updateContact = (id, newData) => {
     console.log("[dbAPI] updateContact called for id:", id, "with newData:", newData);
-  
     let contacts = getContacts();
     if (!contacts || contacts.length === 0) {
-      console.warn("[dbAPI] Aucun contact trouvé dans la base de données.");
+      console.log("[dbAPI] No contacts found in database.");
       return null;
     }
-  
     const index = contacts.findIndex(c => c.id === id);
     if (index > -1) {
-      // Mise à jour seulement des champs fournis, sans écraser l'entrée complète
       contacts[index] = { ...contacts[index], ...newData };
       saveContacts(contacts);
-  
-      console.log("[dbAPI] Contact mis à jour:", contacts[index]);
+      console.log("[dbAPI] Contact updated:", contacts[index]);
       return contacts[index];
     } else {
-      console.warn("[dbAPI] Contact non trouvé pour mise à jour avec id:", id);
+      console.log("[dbAPI] Contact not found for update with id:", id);
       return null;
     }
   };
@@ -156,7 +152,7 @@ const dbAPI = (() => {
       console.log("[dbAPI] Contact deleted:", deleted);
       return deleted;
     }
-    console.warn("[dbAPI] Contact not found for deletion with id:", id);
+    console.log("[dbAPI] Contact not found for deletion with id:", id);
     return null;
   };
 

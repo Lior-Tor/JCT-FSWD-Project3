@@ -27,9 +27,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const logoutBtn = document.getElementById("logoutBtn");
   const addContactBtn = document.getElementById("addContactBtn");
 
-
-  
-
   if (homeBtn) {
     homeBtn.addEventListener("click", () => {
       console.log("[App] Home button clicked. Navigating to contacts.");
@@ -73,7 +70,6 @@ document.addEventListener("DOMContentLoaded", () => {
     event.preventDefault();
     handleAddandUpdateContact();
   });
- 
 
   // Handle modal cancel
   document.getElementById("cancelModalBtn")?.addEventListener("click", closeContactModal);
@@ -89,31 +85,27 @@ document.addEventListener("DOMContentLoaded", () => {
       handleRegister();
     }
   });
-  
 });
 
 // Function to show contact modal (for adding or editing)
-function showContactModal(contact = null,id) {
+function showContactModal(contact = null, id) {
   Id = id;
   const modal = document.getElementById("contactModal");
   if (modal) {
     modal.style.display = "block";
     
-  console.log("Ok");
+    console.log("Ok");
     document.getElementById("modalTitle").textContent = contact ? "Edit Contact" : "Add Contact";
     
     if (contact) {
       document.getElementById("contactName").value = contact.fullname;
       document.getElementById("contactPhone").value = contact.phone;
       document.getElementById("contactEmail").value = contact.email;
-
       isEditing = true;
-
       //document.getElementById("contactForm")?.addEventListener("submit", (event) => {
       //  event.preventDefault();
       //  UpdateContact(id);
       //});
-      
     } else {
       document.getElementById("contactForm").reset();
     }
@@ -126,40 +118,35 @@ function closeContactModal() {
   isEditing = false;
 }
 
-// Fonction pour récupérer les contacts
+// Function to retrieve contacts
 function fetchContacts() {
   const xhr = new FXMLHttpRequest();
-
-
   xhr.open("POST", "/users/getcurentuser", true);
-    xhr.setRequestHeader("Content-Type", "application/json");
-
-    console.log("Envoi de la requête pour récupérer le current user...");
-
-    xhr.onreadystatechange = function () {
-        console.log("ReadyState changé:", xhr.readyState);
-        
-        if (true) {
-          console.log("[fetchCurrentUser] Response:", xhr.status, xhr.responseText);
-      
-          if (true) {
-              try {
-                  const response = JSON.parse(xhr.responseText);
-                  const currentUser = response.response.user; 
-                  console.log("Current User:", currentUser);
-              } catch (error) {
-                  console.error("Erreur de parsing JSON :", error);
-              }
-          } else {
-              console.error("Erreur lors de la récupération du current user, statut :", xhr.status);
-          }
-      }
-    };
-
-    xhr.send();
-
   xhr.setRequestHeader("Content-Type", "application/json");
+  console.log("Sending request for currentuser...");
 
+  xhr.onreadystatechange = function () {
+    console.log("ReadyState changed:", xhr.readyState);
+    
+    if (true) {
+      console.log("[fetchCurrentUser] Response:", xhr.status, xhr.responseText);
+  
+      if (true) {
+          try {
+              const response = JSON.parse(xhr.responseText);
+              const currentUser = response.response.user; 
+              console.log("Current User:", currentUser);
+          } catch (error) {
+              console.error("Parsing error JSON :", error);
+          }
+      } else {
+          console.error("Erreur lors de la récupération du current user, statut :", xhr.status);
+      }
+    }
+  };
+
+  xhr.send();
+  xhr.setRequestHeader("Content-Type", "application/json");
   xhr.open("GET", "/contacts");
   xhr.onreadystatechange = function () {
     if (xhr.readyState === 4 && xhr.status === 200) {
@@ -170,11 +157,10 @@ function fetchContacts() {
   xhr.send();
 }
 
-// Fonction pour afficher les contacts
+// Function to display contacts
 function renderContacts(contacts) {
   const contactsList = document.getElementById("contactsList");
-
-  contactsList.innerHTML = ""; // Nettoie les anciens éléments avant d'ajouter les nouveaux
+  contactsList.innerHTML = ""; // Clear existing items
 
   contacts.forEach((contact) => {
     const contactItem = document.createElement("li");
@@ -191,33 +177,28 @@ function renderContacts(contacts) {
 
     contactItem.querySelector(".edit-contact-btn").addEventListener("click", () => showContactModal(contact,contact.id));
     contactItem.querySelector(".delete-contact-btn").addEventListener("click", () => deleteContact(contact.id));
-
     contactsList.appendChild(contactItem);
   });
 
-  // Ajout d'un contact
-document.getElementById("addContactBtn")?.addEventListener("click", () => {
+  // Adding a contact
+  document.getElementById("addContactBtn")?.addEventListener("click", () => {
   showContactModal();
-});
+  });
 
-// Recherche de contacts
-document.getElementById("searchContact")?.addEventListener("input", (e) => {
-  filterContacts(e.target.value);
-});
+  // Contact search
+  document.getElementById("searchContact")?.addEventListener("input", (e) => {
+    filterContacts(e.target.value);
+  });
 
-// Gestion du formulaire
-document.getElementById("contactForm")?.addEventListener("submit", (event) => {
-  event.preventDefault();
-  handleAddandUpdateContact();
-});
+  // Contact form submission
+  document.getElementById("contactForm")?.addEventListener("submit", (event) => {
+    event.preventDefault();
+    handleAddandUpdateContact();
+  });
 
-// Fermeture du modal
-document.getElementById("cancelModalBtn")?.addEventListener("click", closeContactModal);
-
-
+  // Modal cancel
+  document.getElementById("cancelModalBtn")?.addEventListener("click", closeContactModal);
 }
-
-
 
 // Function to handle adding a new contact
 function handleAddandUpdateContact() {
@@ -230,18 +211,15 @@ function handleAddandUpdateContact() {
     return;
   }
 
-  
-
   const contactData = { fullname, phone, email, currentUser };
   const xhr = new FXMLHttpRequest();
 
-  if(isEditing){
-    
+  if(isEditing) {
     xhr.open("PUT", `/contacts/${Id}`);
     xhr.onreadystatechange = function () {
       if (xhr.readyState === 4) {
         console.log("[updateContact] Server Response:", xhr.status, xhr.responseText);
-      
+
         if (xhr.status === 200) { // Correction ici (attend 200 au lieu de 201)
           console.log("[updateContact] Contact updated successfully.");
           fetchContacts();
@@ -253,10 +231,7 @@ function handleAddandUpdateContact() {
     };
     xhr.setRequestHeader("Content-Type", "application/json");
     xhr.send(JSON.stringify(contactData));
-
-  }
-
-  else{
+  } else {
     xhr.open("POST", "/contacts");
     xhr.onreadystatechange = function () {
       if (xhr.readyState === 4) {
@@ -273,10 +248,8 @@ function handleAddandUpdateContact() {
     };
     xhr.setRequestHeader("Content-Type", "application/json");
     xhr.send(JSON.stringify(contactData));
-
   }
 }
-
 
 // Function to delete a contact
 function deleteContact(contactId) {
@@ -304,33 +277,28 @@ function filterContacts(query) {
   });
 }
 
-
 // Handle logout: clear session info and redirect to login
 function handleLogout() {
-
   currentUser = null;
   const contactData = "null";
   const xhr = new FXMLHttpRequest();
-
+  xhr.open("POST", "/users/setcurentuser");
+  xhr.onreadystatechange = function () {
+    if (xhr.readyState === 4) {
+      console.log("[updatecurrentUser] currentUser Response:", xhr.status, xhr.responseText);
     
-    xhr.open("POST", "/users/setcurentuser");    
-    xhr.onreadystatechange = function () {
-      if (xhr.readyState === 4) {
-        console.log("[updatecurrentUser] currentUser Response:", xhr.status, xhr.responseText);
-      
-        if (xhr.status === 201) { // Correction ici (attend 200 au lieu de 201)
-          console.log("[updatecurrentUser] currentUser updated successfully.");
-          fetchContacts();
-          closeContactModal();
-        } else {
-          alert("Error updating currentUser: " + xhr.responseText);
-        }
+      if (xhr.status === 201) { // Correction ici (attend 200 au lieu de 201)
+        console.log("[updatecurrentUser] currentUser updated successfully.");
+        fetchContacts();
+        closeContactModal();
+      } else {
+        alert("Error updating currentUser: " + xhr.responseText);
       }
-    };
-    xhr.setRequestHeader("Content-Type", "application/json");
-    xhr.send(JSON.stringify(contactData));
+    }
+  };
+  xhr.setRequestHeader("Content-Type", "application/json");
+  xhr.send(JSON.stringify(contactData));
 
-  
   console.log("[App] Handling logout.");
   document.getElementById("logoutBtn").style.display = "none";
   location.hash = "#/login";
@@ -348,7 +316,6 @@ function handleLogin() {
     console.warn("[App] Login validation failed: Missing email or password.");
     return showLoginError("Please enter both email and password.");
   }
-
 
   currentUser = email;
   const xhr = new FXMLHttpRequest();
@@ -369,7 +336,6 @@ function handleLogin() {
   };
   xhr.setRequestHeader("Content-Type", "application/json");
   xhr.send(JSON.stringify(currentUser));
-
   xhr.open("POST", "/users/login");
   
   xhr.onreadystatechange = function () {
