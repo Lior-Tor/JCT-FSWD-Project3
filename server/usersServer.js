@@ -1,4 +1,5 @@
 /* usersServer.js */
+
 const usersServer = (() => {
   // Validate login credentials
   const login = (body) => {
@@ -101,4 +102,4 @@ const usersServer = (() => {
   };
 
   return { handleRequest };
-})();
+})(); // Invoke the IIFE (Immediately Invoked Function Expression)

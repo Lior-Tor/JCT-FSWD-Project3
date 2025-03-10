@@ -1,4 +1,5 @@
 /* router.js */
+
 const Router = (() => {
   // Map routes to the corresponding template IDs in index.html
   const routes = {
@@ -19,13 +20,14 @@ const Router = (() => {
       appContainer.innerHTML = ""; // Clear the app container
       appContainer.appendChild(clone); // Inject the template content
       console.log("[Router] View loaded successfully.");
+      
       // If contacts view loaded, call fetchContacts() to render contacts
-      if (route === "/contacts" && typeof fetchContacts === "function") {
+      if (route === "/contacts") {
         fetchContacts();
       }
     } else {
       document.getElementById("app").innerHTML = `<p>Error loading view</p>`;
-      console.error("[Router] Error: Template not found for route:", route);
+      console.log("[Router] ERROR: Template not found for route:", route);
     }
   };
 
@@ -42,4 +44,4 @@ const Router = (() => {
   };
 
   return { init };
-})();
+})(); // Invoke the IIFE (Immediately Invoked Function Expression)

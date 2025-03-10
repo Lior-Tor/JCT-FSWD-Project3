@@ -1,14 +1,13 @@
-/* contacts.css */
-
 /* Contacts view container */
 .contacts-view {
   width: 100%;
   max-width: 800px;
   margin: 2em auto;
   padding: 1em;
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  background: linear-gradient(135deg, #ffffff, #f9f9f9);
+  border-radius: 12px;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  opacity: 0.9;
 }
 
 /* Header */
@@ -68,23 +67,28 @@
   padding: 0;
 }
 
+/* Each contact item card */
 .contact-item {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 1em;
-  border-bottom: 1px solid #eee;
-  transition: background 0.3s ease;
+  padding: 1.2em;
+  margin-bottom: 1em;
+  border-radius: 8px;
+  background: #fff;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .contact-item:hover {
-  background: #f9f9f9;
+  transform: translateY(-3px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
 }
 
-/* Contact info */
+/* Left column: Contact info */
 .contact-info {
+  flex: 1;
   display: flex;
   flex-direction: column;
+  gap: 0.3em;
 }
 
 .contact-name {
@@ -99,34 +103,34 @@
   color: #555;
 }
 
-/* Edit and Delete buttons */
-.edit-contact-btn,
-.delete-contact-btn {
-  background: none;
+/* Right column: All icons in one container */
+.contact-icons-all {
+  display: flex;
+  align-items: center;
+  gap: 1em;
+  margin-left: auto;
+}
+
+.contact-icons-all .contact-icon {
+  width: 25px;
+  height: 25px;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.contact-icons-all .contact-icon:hover {
+  transform: scale(1.2);
+}
+
+/* Ensure buttons within the icons container have no extra padding or background */
+.contact-icons-all button {
+  background: transparent;
   border: none;
   cursor: pointer;
-  padding: 0.5em 0.8em;
-  font-size: 0.9em;
-  border-radius: 5px;
-  transition: background 0.3s ease, color 0.3s ease;
+  padding: 0;
 }
 
-.edit-contact-btn {
-  color: #1a73e8;
-}
-
-.edit-contact-btn:hover {
-  color: #1256c4;
-}
-
-.delete-contact-btn {
-  color: #d32f2f;
-}
-
-.delete-contact-btn:hover {
-  color: #b71c1c;
-}
-
+/* Logout Button */
 #logoutBtn {
   padding: 0.6em 1em;
   background: #1a73e8;
@@ -134,12 +138,19 @@
   color: #fff;
   border-radius: 20px;
   cursor: pointer;
-  transition: background 0.3s ease, transform 0.2s ease;
+  transition: transform 0.2s ease, background 0.3s ease;
+}
+
+#logoutBtn:hover,
+#logoutBtn:focus {
+  background: #1256c1;
+  transform: scale(1.1);
+  outline: none;
 }
 
 /* Modal overlay */
 .modal {
-  display: none; /* Caché par défaut */
+  display: none; /* Hidden by default */
   width: 100%;
   height: 30%;
 }

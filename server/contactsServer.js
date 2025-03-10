@@ -1,4 +1,5 @@
 /* contactsServer.js */
+
 const contactsServer = (() => {
   // Return only the contacts that belong to the current user
   const getContacts = () => {
@@ -160,4 +161,4 @@ const contactsServer = (() => {
   };
 
   return { handleRequest };
-})();
+})(); // Invoke the IIFE (Immediately Invoked Function Expression)
