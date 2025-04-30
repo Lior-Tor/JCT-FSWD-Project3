@@ -5,5 +5,5 @@
 Project 3 for JCT course of Full Stack Web Development.
 
 Collaborators:
-- Lior Tordjman
-- Eliaou Madar
+- [Lior Tordjman](https://github.com/Lior-Tor)
+- [Eliaou Madar](https://github.com/Eliaou-Madar)
